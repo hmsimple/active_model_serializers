@@ -93,13 +93,7 @@ module ActiveModel
 
       class HasMany < Config #:nodoc:
         def key
-          if key = option(:key)
-            key
-          elsif embed_ids?
-            "#{@name.to_s.singularize}_ids".to_sym
-          else
-            @name
-          end
+          option(:key) || @name
         end
 
         def serialize
