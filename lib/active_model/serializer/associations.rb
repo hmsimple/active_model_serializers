@@ -93,7 +93,13 @@ module ActiveModel
 
       class HasMany < Config #:nodoc:
         def key
-          option(:key) || @name
+          if key = option(:key)
+            key
+          elsif embed_ids?
+            "#{@name.to_s.singularize}_ids".to_sym
+          else
+            @name
+          end
         end
 
         def serialize
@@ -109,12 +115,8 @@ module ActiveModel
         end
 
         def serialize_ids
-          # Use pluck or select_columns if available
-          # return collection.ids if collection.respond_to?(:ids)
-          ids_key = "#{key.to_s.singularize}_ids"
-
-          if !option(:include) && source_serializer.object.respond_to?(ids_key)
-            source_serializer.object.send(ids_key)
+          if !option(:include) && source_serializer.object.respond_to?(key)
+            source_serializer.object.send(key)
           else
             associated_object.map do |item|
               item.read_attribute_for_serialization(:id)
